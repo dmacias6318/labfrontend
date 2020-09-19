@@ -9,13 +9,11 @@ const App= lazy(() => import('./App'))
 
 
 ReactDOM.render(
-  <React.StrictMode>
     
      <Suspense fallback={<center><img src={logo} alt="loading..." style={{marginTop:"150px",marginBottom:"100px"}} /></center>}>
      <App />
-    </Suspense>
+    </Suspense>,
     
-  </React.StrictMode>,
   document.getElementById('root')
 );
 
