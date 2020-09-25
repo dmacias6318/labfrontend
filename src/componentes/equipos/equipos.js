@@ -23,6 +23,8 @@ const Equipos = (props) => {
 
     const [state, setState] = useState({
         todos: [],
+        todosHard:[],
+        todosSoft:[],
         currentPage: 1,
         todosPerPage: 10,
         modalinfo: false,
@@ -118,6 +120,9 @@ const Equipos = (props) => {
             ...state,
             infoCausa: data
         })
+
+        allEquiposHard(data.equipoid)
+        allEquiposSof(data.equipoid)
     }
 
 
@@ -151,8 +156,8 @@ const Equipos = (props) => {
             ...state,
             nuevoSoftware: true
         })
-        setDatah({
-            ...datah,
+        setDatas({
+            ...datas,
             equipoid: data.equipoid
         })
     }
@@ -187,7 +192,7 @@ const Equipos = (props) => {
         }else if(datah.detalle===""){
             alert("debe ingresar el detalle")
         }else{
-            const respuesta =  await Axios.post(`${url}/createHard`,data)
+            const respuesta =  await Axios.post(`${url}/createHard`,datah)
             if(respuesta.data.sms ==="ok"){
                 alert(respuesta.data.mensaje)
                 setDatah({...datah,nombre:"",detalle:""})
@@ -209,10 +214,14 @@ const Equipos = (props) => {
         }else if(datas.licencia===""){
             alert("debe ingresar el detalle")
         }else{
-            const respuesta =  await Axios.post(`${url}/createSoft`,data)
+            const respuesta =  await Axios.post(`${url}/createSoft`,datas)
             if(respuesta.data.sms ==="ok"){
                 alert(respuesta.data.mensaje)
-                setDatah({...datas,nombre:"",detalle:""})
+                setDatah({...datas,
+                categoria: "",
+                nombre: "",
+                version: "",
+                licencia: "",})
                 allEquipos()
             }else{
               alert(respuesta.data.sms)
@@ -231,10 +240,9 @@ const Equipos = (props) => {
 
             <tr key={index}>
                 <th>
-                    <button onClick={(e) => { editCausa(todo, e) }} style={{ margin: "4px" }}>Edit</button>
                     <button onClick={(e) => { infoCausa(todo, e) }} style={{ margin: "4px" }}>info</button>
-                    <button onClick={(e) => { hardwareModal(todo, e) }} style={{ margin: "4px" }}>Hard</button>
-                    <button onClick={(e) => { softwareModal(todo, e) }} style={{ margin: "4px" }}>Soft</button>
+                    <button onClick={(e) => { hardwareModal(todo, e) }} style={{ margin: "4px" }}>Hardware</button>
+                    <button onClick={(e) => { softwareModal(todo, e) }} style={{ margin: "4px" }}>Software</button>
                 </th>
                 <th>{todo.numeropc}</th>
                 <th scope="row">{todo.tipo}</th>
@@ -286,6 +294,37 @@ const Equipos = (props) => {
             setState({
                 ...state,
                 todos: result.data.result,
+                currentPage: 1
+
+            })
+        } catch (e) {
+            console.log(e)
+        }
+    }
+
+
+    const allEquiposHard = async (idhard) => {
+        try {
+            const result = await Axios.get(`${url}/alldataHard/${idhard}`)
+            console.log("hard:"+result.data.resultado)
+            setState({
+                ...state,
+                todosHard: result.data.resultado,
+                currentPage: 1
+
+            })
+        } catch (e) {
+            console.log(e)
+        }
+    }
+
+    const allEquiposSof = async (idsoft) => {
+        try {
+            const result = await Axios.get(`${url}/alldataSoft/${idsoft}`)
+            console.log("sof:"+ result.data.resultado)
+            setState({
+                ...state,
+                todosSoft: result.data.resultado,
                 currentPage: 1
 
             })
@@ -529,14 +568,14 @@ const Equipos = (props) => {
                 <div className="row">
                         <div className="col-md-3">
                             <div className="form-group">
-                                <label htmlFor="exampleInputEmail1">Hadware: </label><br></br>
+                                <label htmlFor="exampleInputEmail1">Nombre del Hadware: </label><br></br>
                                 <input type="text" className="form-control" onChange={onchangedatah} value={datah.nombre} id="nombre" name="nombre" placeholder="Nombre" />
                             </div>
                         </div>
                         <div className="col-md-6">
                             <div className="form-group">
                                 <label htmlFor="exampleInputEmail1">Detalle:</label><br></br>
-                                <input type="text" className="form-control" onChange={onchangedatah} value={datah.detalle} id="detalle" name="detalle" placeholder="Detalle" />
+                                <textarea rows="6" className="form-control" onChange={onchangedatah} value={datah.detalle} id="detalle" name="detalle" placeholder="Detalle" />
                             </div>
                         </div>
                         
@@ -575,33 +614,62 @@ const Equipos = (props) => {
                     })
                 }
                 }
-                    style={{ background: "black", color: "white" }}>INFORMACION DE CAUSA</ModalHeader>
+                    style={{ background: "black", color: "white" }}>INFORMACION DE EQUIPO</ModalHeader>
                 <ModalBody>
                     <div className="col-md-12">
+                    <h3 style={{padding:"12px",width:"100%"}}>INFORMACION DE HARDWARE</h3>
                         <div className="row">
-                            <div className="col-md-12">
-                                <h2 style={{ color: "black" }}>Cliente : {''}{state.infoCausa.cliente}</h2>
-                            </div>
-                            <div className="col-md-6">
-                                <h2 style={{ color: "black" }}>FECHA DE INICIO: {''}{state.infoCausa.fecha_inicio_proceso}</h2>
-                            </div>
-                            <div className="col-md-3">
-                                <h2 style={{ color: "black" }}>CIUDAD: {''}{state.infoCausa.ciudad}</h2>
-                            </div>
-                            <div className="col-md-3">
-                                <h2 style={{ color: "black" }}>MONTO : {'$'}{state.infoCausa.monto}</h2>
-                            </div>
+                           
+                           <Table>
+                               <thead>
+                                  <tr>
+                                  <th>NOMBRE DEL HARWARE</th>
+                                   <th>DETALLE</th>
+                                  </tr>
+                               </thead>
+                               <tbody>
+                                  {
+                                      state.todosHard.map((data,index)=>(
+                                        <tr key={index}>
+                                          <th>{data.nombre}</th>
+                                          <th><textarea rows="6" value={data.detalle}></textarea></th>
+                                        </tr>
+                                      ))
+                                  }
+                               </tbody>
+                           </Table>
+
+                        </div>
+                        <br></br>
+                        <h3 style={{padding:"12px",width:"100%"}}>INFORMACION DE SOFTWARE</h3>
+                        <div className="row">
+                           
+                           <Table>
+                               <thead>
+                                  <tr>
+                                  <th>NOMBRE DEL SOFTWARE</th>
+                                   <th>CATEGORIA</th>
+                                   <th>VERSION</th>
+                                   <th>LICENCIA</th>
+                                  </tr>
+                               </thead>
+                               <tbody>
+                                  {
+                                      state.todosSoft.map((data,index)=>(
+                                        <tr key={index}>
+                                          <th>{data.nombre}</th>
+                                          <th>{data.categoria}</th>
+                                          <th>{data.version}</th>
+                                          <th>{data.licencia}</th>
+                                        </tr>
+                                      ))
+                                  }
+                               </tbody>
+                           </Table>
 
                         </div>
 
-                        <div className="row">
-                            <div className="col-md-12">
-                                <h2 style={{ color: "black" }}>OBSERVACION : </h2><br></br>
-                            </div>
-                            <div className="col-md-12">
-                                <h2 style={{ color: "black" }}> {state.infoCausa.observacion}</h2>
-                            </div>
-                        </div>
+                       
                     </div>
                 </ModalBody>
                 {/*<ModalFooter>
